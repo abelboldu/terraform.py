@@ -408,6 +408,15 @@ def aws_host(resource, module_name):
     if 'tags.sshPrivateIp' in raw_attrs:
         attrs['ansible_ssh_host'] = raw_attrs['private_ip']
 
+    # Add bastion as a ProxyCommand hop
+    # TODO: Add bastion_private_key
+    if 'bastion_host' in raw_attrs:
+        attrs['ansible_ssh_common_args'] = "-o ProxyCommand=\"ssh -A -W \%h:\%p -q %s\"" % raw_attrs['bastion_host']
+        if 'bastion_port' in raw_attrs:
+            attrs['ansible_ssh_common_args'] += " -p %s" % raw_attrs['bastion_port']
+        if 'bastion_user' in raw_attrs:
+            attrs['ansible_ssh_common_args'] += " -l %s" % raw_attrs['bastion_user']
+
     # add to groups by comma separated tag(s)
     if 'tags.groups' in raw_attrs:
         for group in raw_attrs['tags.groups'].split(','):
